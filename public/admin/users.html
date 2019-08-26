@@ -45,8 +45,9 @@
                             <div class="form-group">
                                 <label class="form-image">
                   <input id="avatar" type="file">
-                  <img src="../assets/img/default.png">
+                  <img src="../assets/img/default.png" id="ava">
                   <i class="mask fa fa-upload"></i>
+                  <input type="hidden" name="avatar" id="imgUrl">
                 </label>
                             </div>
                         </div>
@@ -190,6 +191,23 @@
                 }
             })
 
+        })
+        $('#avatar').on('change', function() {
+            var formData = new FormData();
+            formData.append('avatar', this.files[0]);
+            $.ajax({
+                type: 'post',
+                url: '/upload',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(reponse) {
+                    //掩藏域保存图片地址 
+                    $('#imgUrl').val(reponse[0].avatar)
+                        //展示图片
+                    $('#ava').attr('src', reponse[0].avatar);
+                }
+            })
         })
 
         function render(arr) {
