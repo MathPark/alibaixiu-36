@@ -1,3 +1,7 @@
+<script src="/login/status"></script>
+<script>
+    if (!isLogin) location.href = "/admin/login.html"
+</script>
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -53,7 +57,7 @@
                     password: pwd
                 },
                 success: function() {
-                    location.href = '/index.html'
+                    location.href = '/admin/index.html'
                 },
                 error: function() {
                     $('.alert').fadeIn(1000).delay(1000).fadeOut(1000)
