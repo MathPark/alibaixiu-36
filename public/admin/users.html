@@ -164,13 +164,14 @@
             <td>{{$value.role=='admin'? '超级管理员' : '普通用户'}}</td>
             <td class="text-center" data-id="{{@$value._id}}">
                 <a href="javascript:;" class="btn btn-default btn-xs" id="edit">编辑</a>
-                <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
+                <a href="javascript:;" class="btn btn-danger btn-xs" id="deleteUser">删除</a>
             </td>
         </tr>
         {{/each}}
     </script>
     <script>
         var userArr = [];
+        var id;
         $.ajax({
             type: 'get',
             url: '/users',
@@ -190,7 +191,6 @@
                 processData: false,
                 contentType: false,
                 success: function(reponse) {
-
                     //掩藏域保存图片地址 
                     $('#img').val(reponse[0].avatar)
                         //展示图片
@@ -199,17 +199,28 @@
                 }
             })
         })
-        $('#adduser').on('click', function() {
+        $('#addUser').on('click', function() {
             var formData = $('form').serialize();
-            console.log(formData);
+
             $.ajax({
                 type: 'post',
                 url: '/users',
                 data: formData,
                 success: function(res) {
-                    userArr.push(res);
+                    userArr.unshift(res);
                     //无刷新加载页面
-                    render(userArr)
+                    render(userArr);
+                    $('#addUser').show();
+                    $('#editUser').hide();
+                    $('form > h2').text('添加新用户');
+                    $('#img').val("");
+                    $('#prev').attr('src', "../assets/img/default.png");
+                    $('#email').val("");
+                    $('#nickName').val("");
+                    $('#admin').prop('checked', false);
+                    $('#normal').prop('checked', false);
+                    $('#activate').prop('checked', false);
+                    $('#unactivate').prop('checked', false);
                 }
             })
 
@@ -224,9 +235,10 @@
             $('tbody').html(html)
         }
         // 点击编辑功能 
-        var id;
         $('tbody').on('click', '#edit', function() {
-            id = $(this).parent().attr('data-id'); //获取到父元素身上的id
+            id = $(this).parent().attr('data-id');
+            console.log(id);
+            //获取到父元素身上的id
             $('form > h2').text('修改用户');
             var trObj = $(this).parents('tr');
             $('#email').val(trObj.children().eq(2).text());
@@ -254,8 +266,11 @@
             $('#addUser').hide();
             $('#editUser').show();
         });
+
+
         // 给修改按钮注册点击事件 
         $('#editUser').on('click', function() {
+
             // serialize 就是用于收集表单数据 只要表单里面的输入框的内容有name属性就会收集到 
             var formData = $('form').serialize();
             $.ajax({
@@ -286,12 +301,13 @@
             })
         });
         //删除用户
-        $('tbody').on('click', '.btn-danger', function() {
+        $('tbody').on('click', '#deleteUser', function() {
+            let id = $(this).parent().attr('data-id');
             $.ajax({
                 type: 'delete',
                 url: '/users/' + id,
                 success: function(result) {
-                    let index = userArr.findIndex(items => items._id = result._id)
+                    let index = userArr.findIndex(items => items._id == result._id)
                     userArr.splice(index, 1)
                     render(userArr);
                 }
