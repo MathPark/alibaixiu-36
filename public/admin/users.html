@@ -156,7 +156,7 @@
     <script type="text/html" id='tpl'>
         {{each list}}
         <tr>
-            <td class="text-center"><input type="checkbox"></td>
+            <td class="text-center"><input type="checkbox" data-id="{{@$value._id}}"></td>
             <td class="text-center"><img class="avatar" src="{{$value.avatar}}"></td>
             <td>{{$value.email}}</td>
             <td>{{$value.nickName}}</td>
@@ -327,19 +327,41 @@
             $('tbody input[type="checkbox"]').prop('checked', flag);
         })
         $('tbody').on('click', 'input[type="checkbox"]', function() {
-            var checkboxNum = $('tbody input[type="checkbox"]').length;
-            var checkedNum = $('tbody input[type="checkbox"]:checked').length;
-            if (checkedNum == checkboxNum) {
-                $('thead input[type="checkbox"]').prop('checked', true);
-            } else {
-                $('thead input[type="checkbox"]').prop('checked', false);
-            }
-            if (checkedNum > 1) {
-                $('#batch').show();
-            } else {
-                $('#batch').hide();
-            }
+                var checkboxNum = $('tbody input[type="checkbox"]').length;
+                var checkedNum = $('tbody input[type="checkbox"]:checked').length;
+                if (checkedNum == checkboxNum) {
+                    $('thead input[type="checkbox"]').prop('checked', true);
+                } else {
+                    $('thead input[type="checkbox"]').prop('checked', false);
+                }
+                if (checkedNum > 1) {
+                    $('#batch').show();
+                } else {
+                    $('#batch').hide();
+                }
 
+            })
+            //批量删除
+        $('#batch').on('click', function() {
+            var ids = [];
+            var tr = $('tbody input[type="checkbox"]:checked');
+            tr.each((index, item) => {
+                ids.push($(item).attr('data-id'))
+            })
+            console.log(ids);
+            if (window.confirm('您确定要删除吗？')) {
+                $.ajax({
+                    type: 'delete',
+                    url: '/users/' + ids.join('-'),
+                    success: function(result) {
+                        result.forEach(item => {
+                            let index = userArr.findIndex(items => items._id == item._id)
+                            userArr.splice(index, 1)
+                        })
+                        render(userArr);
+                    }
+                })
+            }
         })
     </script>
 
