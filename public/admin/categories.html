@@ -42,14 +42,15 @@
                         <h2>添加分类</h2>
                         <div class="form-group">
                             <label>名称</label>
-                            <input class="form-control" type="text" placeholder="请输入分类名称">
+                            <input class="form-control" name="title" type="text" placeholder="请输入分类名称" id="title">
                         </div>
                         <div class="form-group">
                             <label>图标</label>
-                            <input class="form-control" type="text" placeholder="请输入分类图标类名">
+                            <input class="form-control" name="className" type="text" placeholder="请输入分类图标类名" id="className">
                         </div>
                         <div class="form-group">
-                            <button class="btn btn-primary" type="submit">添加</button>
+                            <button class="btn btn-primary" type="button" id="addUser">添加</button>
+                            <button class="btn btn-primary" type="button" id="editUser" style="display: none">修改</button>
                         </div>
                     </form>
                 </div>
@@ -62,34 +63,12 @@
                             <tr>
                                 <th class="text-center" width="40"><input type="checkbox"></th>
                                 <th>名称</th>
+                                <th>图标名称</th>
                                 <th class="text-center" width="100">操作</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="text-center"><input type="checkbox"></td>
-                                <td>奇趣事</td>
-                                <td class="text-center">
-                                    <a href="javascript:;" class="btn btn-info btn-xs">编辑</a>
-                                    <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-center"><input type="checkbox"></td>
-                                <td>潮科技</td>
-                                <td class="text-center">
-                                    <a href="javascript:;" class="btn btn-info btn-xs">编辑</a>
-                                    <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-center"><input type="checkbox"></td>
-                                <td>奇趣事</td>
-                                <td class="text-center">
-                                    <a href="javascript:;" class="btn btn-info btn-xs">编辑</a>
-                                    <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-                                </td>
-                            </tr>
+
                         </tbody>
                     </table>
                 </div>
@@ -135,6 +114,105 @@
     </div>
     <script src="../assets/vendors/jquery/jquery.js"></script>
     <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
+    <script src="../assets/vendors/art-template/template-web.js"></script>
+    <script src="../js/common.js"></script>
+    <script type="text/html" id="cTpl">
+        {{each list}}
+        <tr>
+            <td class="text-center"><input type="checkbox"></td>
+            <td>{{$value.title}}</td>
+            <td>{{$value.className}}</td>
+            <td class="text-center" data-id="{{$value._id}}">
+                <a href="javascript:;" class="btn btn-info btn-xs" id="edit">编辑</a>
+                <a href="javascript:;" class="btn btn-danger btn-xs" id="delete">删除</a>
+            </td>
+        </tr>
+        {{/each}}
+    </script>
+    <script>
+        var cArr = [];
+        $.ajax({
+            type: 'get',
+            url: '/categories',
+            success: function(res) {
+                cArr = res;
+                render(cArr);
+            }
+        })
+        $('#addUser').on('click', function() {
+            var formData = $('form').serialize();
+            $.ajax({
+                type: 'post',
+                url: '/categories',
+                data: formData,
+                success: function(res) {
+                    cArr.unshift(res);
+                    //无刷新加载页面
+                    render(cArr);
+                    $('#title').val("");
+                    $('#className').val("");
+                }
+            })
+
+        })
+        var id;
+        // 点击编辑功能 
+        $('tbody').on('click', '#edit', function() {
+            //获取到父元素身上的id
+            id = $(this).parent().attr('data-id');
+            $('form > h2').text('修改分类');
+            var trObj = $(this).parents('tr');
+            $('#title').val(trObj.children().eq(1).text());
+            $('#className').val(trObj.children().eq(2).text());
+            $('#addUser').hide();
+            $('#editUser').show();
+        });
+
+
+        // 给修改按钮注册点击事件 
+        $('#editUser').on('click', function() {
+            // serialize 就是用于收集表单数据 只要表单里面的输入框的内容有name属性就会收集到 
+            var formData = $('form').serialize();
+            $.ajax({
+                type: 'put',
+                url: '/categories/' + id,
+                data: formData,
+                success: function(res) {
+                    // 通过res对象里面的_id属性的值去数组中 cArr这个数组将对应的元素找出来 
+                    // 如果数组里面的元素的_id的值刚好等于了res._id 
+                    var index = cArr.findIndex(item => item._id == res._id);
+                    // 将res这个对象赋值给了cArr这个数组里面的指定的元素
+                    cArr[index] = res;
+                    // 重新渲染数据 
+                    render(cArr);
+                    $('#addUser').show();
+                    $('#editUser').hide();
+                    $('form > h2').text('添加分类');
+                    $('#title').val("");
+                    $('#className').val("");
+                }
+            })
+        });
+        $('tbody').on('click', '#delete', function() {
+            let id = $(this).parent().attr('data-id');
+            $.ajax({
+                type: 'DELETE',
+                url: '/categories/' + id,
+                success: function(res) {
+                    let index = cArr.findIndex(item => item._id == res._id);
+                    cArr.splice(index, 1);
+                    render(cArr);
+                }
+            })
+        })
+
+        function render(arr) {
+            var html = template('cTpl', {
+                list: arr
+            });
+            $('tbody').html(html)
+        }
+    </script>
     <script>
         NProgress.done()
     </script>

@@ -150,6 +150,7 @@
     <script src="../assets/vendors/jquery/jquery.js"></script>
     <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
     <script src="../assets/vendors/art-template/template-web.js"></script>
+    <script src="../js/common.js"></script>
     <script>
         NProgress.done()
     </script>
@@ -237,7 +238,6 @@
         // 点击编辑功能 
         $('tbody').on('click', '#edit', function() {
             id = $(this).parent().attr('data-id');
-            console.log(id);
             //获取到父元素身上的id
             $('form > h2').text('修改用户');
             var trObj = $(this).parents('tr');
@@ -270,7 +270,6 @@
 
         // 给修改按钮注册点击事件 
         $('#editUser').on('click', function() {
-
             // serialize 就是用于收集表单数据 只要表单里面的输入框的内容有name属性就会收集到 
             var formData = $('form').serialize();
             $.ajax({
