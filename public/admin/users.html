@@ -303,15 +303,18 @@
         //删除用户
         $('tbody').on('click', '#deleteUser', function() {
             let id = $(this).parent().attr('data-id');
-            $.ajax({
-                type: 'delete',
-                url: '/users/' + id,
-                success: function(result) {
-                    let index = userArr.findIndex(items => items._id == result._id)
-                    userArr.splice(index, 1)
-                    render(userArr);
-                }
-            })
+            if (window.confirm('您确定要删除吗？')) {
+                $.ajax({
+                    type: 'delete',
+                    url: '/users/' + id,
+                    success: function(result) {
+                        let index = userArr.findIndex(items => items._id == result._id)
+                        userArr.splice(index, 1)
+                        render(userArr);
+                    }
+                })
+            }
+
 
 
         })
