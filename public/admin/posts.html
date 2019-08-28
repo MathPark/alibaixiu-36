@@ -132,8 +132,8 @@
             {{/if}}
     </script>
     <script type="text/html" id='cTpl'>
-        {{each records}}
-        <option value="{{$value._id}}">{{$value.category.title}}</option>
+        {{each list}}
+        <option value="{{$value._id}}">{{$value.title}}</option>
         {{/each}}
     </script>
     <script>
@@ -187,21 +187,21 @@
         //展示分类
         $.ajax({
                 type: 'get',
-                url: '/posts',
-                data: {
-                    category: categoryValue,
-                    state: state
-                },
+                url: '/categories',
                 success: function(res) {
-                    console.log(res);
-                    var categoryStr = template('cTpl', res);
-                    $('#category').append(categoryStr)
+
+                    var categoryStr = template('cTpl', {
+                        list: res
+                    })
+                    $('#category').append(categoryStr);
                 }
             })
             //筛选功能
         $('#btnSeach').on('click', function() {
-            c = $('#category').val();
-            s = $('#state').val();
+            categoryValue = $('#category').val();
+            state = $('#state').val();
+
+
             $.ajax({
                 type: 'get',
                 url: '/posts',
