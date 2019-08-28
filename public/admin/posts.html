@@ -1,10 +1,3 @@
-<script src="/login/status"></script>
-<script>
-    // console.log(isLogin);
-    if (!isLogin) {
-        location.href = "login.html";
-    }
-</script>
 <!DOCTYPE html>
 <html lang="zh-CN">
 
@@ -28,7 +21,7 @@
             <button class="btn btn-default navbar-btn fa fa-bars"></button>
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="profile.html"><i class="fa fa-user"></i>个人中心</a></li>
-                <li><a href="javascript:;" id="logout"><i class="fa fa-sign-out"></i>退出</a></li>
+                <li><a href="login.html"><i class="fa fa-sign-out"></i>退出</a></li>
             </ul>
         </nav>
         <div class="container-fluid">
@@ -48,9 +41,9 @@
             <option value="0">草稿</option>
             <option value="1">已发布</option>
           </select>
-                    <button class="btn btn-default btn-sm" type="button" id="btnSearch">筛选</button>
+                    <button class="btn btn-default btn-sm" type="button" id="btnSeach">筛选</button>
                 </form>
-                <ul class="pagination pagination-sm pull-right">
+                <ul class="pagination pagination-sm pull-right" id="page">
 
                 </ul>
             </div>
@@ -66,39 +59,8 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- <tr>
-            <td>随便一个名称</td>
-            <td>小小</td>
-            <td>潮科技</td>
-            <td class="text-center">2016/10/07</td>
-            <td class="text-center">已发布</td>
-            <td class="text-center">
-              <a href="javascript:;" class="btn btn-default btn-xs">编辑</a>
-              <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-            </td>
-          </tr>
-          <tr>
-            <td>随便一个名称</td>
-            <td>小小</td>
-            <td>潮科技</td>
-            <td class="text-center">2016/10/07</td>
-            <td class="text-center">已发布</td>
-            <td class="text-center">
-              <a href="javascript:;" class="btn btn-default btn-xs">编辑</a>
-              <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-            </td>
-          </tr>
-          <tr>
-            <td>随便一个名称</td>
-            <td>小小</td>
-            <td>潮科技</td>
-            <td class="text-center">2016/10/07</td>
-            <td class="text-center">已发布</td>
-            <td class="text-center">
-              <a href="javascript:;" class="btn btn-default btn-xs">编辑</a>
-              <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-            </td>
-          </tr> -->
+
+
                 </tbody>
             </table>
         </div>
@@ -144,7 +106,7 @@
     <script src="../assets/vendors/jquery/jquery.js"></script>
     <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
     <script src="../assets/vendors/art-template/template-web.js"></script>
-
+    <script src="../js/common.js"></script>
     <script type="text/html" id="pTpl">
         {{each records}}
         <tr>
@@ -152,102 +114,98 @@
             <td>{{$value.author.nickName}}</td>
             <td>{{$value.category.title}}</td>
             <td class="text-center">{{$value.createAt && $value.createAt.substr(0,10)}}</td>
-            <td class="text-center">{{$value.state == 1 ? '已发布' : '草稿'}}</td>
+            <td class="text-center">{{$value.state=='1' ? '已发布' : '草稿'}}</td>
             <td class="text-center">
-                <a href="javascript:;" class="btn btn-default btn-xs ">编辑</a>
+                <a href="javascript:;" class="btn btn-default btn-xs">编辑</a>
                 <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
             </td>
         </tr>
         {{/each}}
-
     </script>
-
-
-    <script type="text/html" id="pageTpl">
-        {{if page > 1}}
-        <li><a href="javascript:;" onclick="changePage({{page - 1}})">上一页</a></li>
+    <script type="text/html" id="changePage">
+        {{if page>1}}
+        <li><a href="javascript:;" onclick="fn({{page-1}})">上一页</a></li>
         {{/if}} {{each display}}
-        <li class="{{$value == page ? 'active' : ''}}"><a href="javascript:;" onclick="changePage({{$value}})">{{$value}}</a></li>
+        <li class="{{page==$value ? 'active' : ''}}"><a href="javascript:;" onclick="fn({{$value}})">{{$value}}</a></li>
         {{/each}} {{if page
-        < pages}} <li><a href="javascript:;" onclick="changePage({{page - 0 + 1}})">下一页</a></li>
+        < pages}} <li><a href="javascript:;" onclick="fn({{page-0+1}})">下一页</a></li>
             {{/if}}
-
     </script>
-
-    <script type="text/html" id="cTpl">
-        {{each list}}
-        <option value="{{$value._id}}">{{$value.title}}</option>
+    <script type="text/html" id='cTpl'>
+        {{each records}}
+        <option value="{{$value._id}}">{{$value.category.title}}</option>
         {{/each}}
     </script>
-
     <script>
-        $('#logout').on('click', function() {
-            var isConfirm = confirm('您真的要退出吗?');
-            if (isConfirm) {
-                // alert('用户点击了确认按钮')
-                $.ajax({
-                    type: 'post',
-                    url: '/logout',
-                    success: function() {
-                        location.href = 'login.html';
-                    },
-                    error: function() {
-                        alert('退出失败')
-                    }
-                })
-            }
-        });
-        // 显示所有的文章  
-        /*
-        1.需要向服务器发起请求 
-        2.构建模板 
-        3.渲染数据 
-        */
-        var s = $('#state').val();
         var c = $('#category').val();
-
-        function render(category = 'all', state = 'all', page = 1) {
+        var s = $('#state').val();
+        $.ajax({
+                type: 'get',
+                url: '/posts',
+                data: {
+                    category: c,
+                    state: s
+                },
+                success: function(res) {
+                    var str = template('pTpl', res);
+                    $('tbody').html(str)
+                    var html = template('changePage', res)
+                    $('#page').html(html)
+                }
+            })
+            //分页功能
+        function fn(page) {
             $.ajax({
                 type: 'get',
                 url: '/posts',
                 data: {
-                    page: page,
-                    category: category,
-                    state: state
+                    category: c,
+                    state: s,
+                    page: page
                 },
                 success: function(res) {
-                    // console.log(res);
                     var str = template('pTpl', res);
-                    $('tbody').html(str);
-                    var pageStr = template('pageTpl', res);
-                    $('.pagination').html(pageStr);
+                    $('tbody').html(str)
+                    var html = template('changePage', res)
+                    $('#page').html(html)
                 }
-            });
+            })
+
         }
-        render();
-        // 分页的效果  
-        function changePage(index) {
-            render(c, s, index);
-        }
-        // 将所有的分类展示到这个页面上
+        //展示分类
         $.ajax({
-            type: 'get',
-            url: '/categories',
-            success: function(res) {
-                // console.log(res);
-                var str = template('cTpl', {
-                    list: res
-                });
-                $('#category').append(str);
-            }
-        });
-        // 给筛选按钮注册点击事件 
-        $('#btnSearch').on('click', function() {
+                type: 'get',
+                url: '/posts',
+                data: {
+                    category: c,
+                    state: s
+                },
+                success: function(res) {
+                    console.log(res);
+                    var categoryStr = template('cTpl', res);
+                    $('#category').append(categoryStr)
+                }
+            })
+            //筛选功能
+        $('#btnSeach').on('click', function() {
             c = $('#category').val();
             s = $('#state').val();
+            $.ajax({
+                type: 'get',
+                url: '/posts',
+                data: {
+                    category: c,
+                    state: s
+                },
+                success: function(res) {
 
-            render(c, s);
-        });
+                    var str = template('pTpl', res);
+                    $('tbody').html(str)
+                    var html = template('changePage', res)
+                    $('#page').html(html)
+                }
+            })
+        })
     </script>
     <script>
         NProgress.done()
