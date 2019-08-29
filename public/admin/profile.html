@@ -42,7 +42,7 @@
                     <div class="col-sm-6">
                         <label class="form-image">
               <input id="avatar" type="file">
-              <img src="../assets/img/default.png">
+              <img src="../assets/img/default.png" id='img'>
               <i class="mask fa fa-upload"></i>
             </label>
                     </div>
@@ -111,6 +111,18 @@
     <script src="../assets/vendors/jquery/jquery.js"></script>
     <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
     <script src="../js/common.js"></script>
+    <script>
+        $.ajax({
+            type: 'get',
+            url: '/users/' + userId,
+            success: function(res) {
+                console.log(res);
+                $('#img').prop('src', res.avatar)
+                $('#email').val(res.email)
+                $('#nickname').val(res.nickName)
+            }
+        })
+    </script>
     <script>
         NProgress.done()
     </script>
