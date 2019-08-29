@@ -116,8 +116,8 @@
             <td class="text-center">{{$value.createAt && $value.createAt.substr(0,10)}}</td>
             <td class="text-center">{{$value.state=='1' ? '已发布' : '草稿'}}</td>
             <td class="text-center">
-                <a href="javascript:;" class="btn btn-default btn-xs">编辑</a>
-                <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
+                <a href="post-add.html?id={{$value._id}}" class="btn btn-default btn-xs" id="edit">编辑</a>
+                <a href="javascript:;" class="btn btn-danger btn-xs" data-id="{{$value._id}}" id="delete">删除</a>
             </td>
         </tr>
         {{/each}}
@@ -151,22 +151,8 @@
         // condition={category:'undefined',state:'undefined'} 既无法查找到数据 
         var categoryValue = $('#category').val();
         var stateValue = $('#state').val();
-        $.ajax({
-                type: 'get',
-                url: '/posts',
-                data: {
-                    category: categoryValue,
-                    state: stateValue
-                },
-                success: function(res) {
-                    var str = template('pTpl', res);
-                    $('tbody').html(str)
-                    var html = template('changePage', res)
-                    $('#page').html(html)
-                }
-            })
-            //分页功能
-        function fn(page) {
+
+        function render(category = 'all', state = 'all', page = 1) {
             $.ajax({
                 type: 'get',
                 url: '/posts',
@@ -176,20 +162,25 @@
                     page: page
                 },
                 success: function(res) {
+                    window.currentPage = res.page
                     var str = template('pTpl', res);
                     $('tbody').html(str)
                     var html = template('changePage', res)
                     $('#page').html(html)
                 }
             })
+        }
 
+        render(categoryValue, stateValue);
+        //分页功能
+        function fn(page) {
+            render(categoryValue, stateValue, page)
         }
         //展示分类
         $.ajax({
                 type: 'get',
                 url: '/categories',
                 success: function(res) {
-
                     var categoryStr = template('cTpl', {
                         list: res
                     })
@@ -200,20 +191,24 @@
         $('#btnSeach').on('click', function() {
             categoryValue = $('#category').val();
             state = $('#state').val();
-
-
+            render(categoryValue, state)
+        })
+        $('tbody').on('click', '#delete', function() {
+            var id = $(this).attr('data-id');
             $.ajax({
-                type: 'get',
-                url: '/posts',
-                data: {
-                    category: categoryValue,
-                    state: state
-                },
+                type: 'delete',
+                url: '/posts/' + id,
                 success: function(res) {
-                    var str = template('pTpl', res);
-                    $('tbody').html(str)
-                    var html = template('changePage', res)
-                    $('#page').html(html)
+                    if ($('tbody').children().length == 1) {
+                        // 在tbody中只有一个子元素的条件下 如果当前页已经是第一页  我们就让它在这一页 
+                        if (currentPage == 1) {
+                            render(categoryValue, state, currentPage);
+                        } else {
+                            render(categoryValue, state, currentPage - 1);
+                        }
+                    } else {
+                        render(categoryValue, state, currentPage);
+                    }
                 }
             })
         })
