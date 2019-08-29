@@ -43,19 +43,20 @@
                         <div class="form-group">
                             <label for="image">图片</label>
                             <!-- show when image chose -->
-                            <img class="help-block thumbnail" style="display: none">
-                            <input id="image" class="form-control" name="image" type="file">
+                            <img class="help-block thumbnail" style="display: none" id='prve'>
+                            <input id="image" class="form-control" type="file">
+                            <input type="hidden" name="image" id="file">
                         </div>
                         <div class="form-group">
                             <label for="text">文本</label>
-                            <input id="text" class="form-control" name="text" type="text" placeholder="文本">
+                            <input id="text" class="form-control" name="title" type="text" placeholder="文本">
                         </div>
                         <div class="form-group">
                             <label for="link">链接</label>
                             <input id="link" class="form-control" name="link" type="text" placeholder="链接">
                         </div>
                         <div class="form-group">
-                            <button class="btn btn-primary" type="submit">添加</button>
+                            <button class="btn btn-primary" type="button" id="btn">添加</button>
                         </div>
                     </form>
                 </div>
@@ -70,22 +71,8 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr>
-                                <td class="text-center"><img class="slide" src="../uploads/slide_1.jpg"></td>
-                                <td>XIU功能演示</td>
-                                <td>#</td>
-                                <td class="text-center">
-                                    <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td class="text-center"><img class="slide" src="../uploads/slide_2.jpg"></td>
-                                <td>XIU功能演示</td>
-                                <td>#</td>
-                                <td class="text-center">
-                                    <a href="javascript:;" class="btn btn-danger btn-xs">删除</a>
-                                </td>
-                            </tr>
+
+
                         </tbody>
                     </table>
                 </div>
@@ -132,7 +119,86 @@
 
     <script src="../assets/vendors/jquery/jquery.js"></script>
     <script src="../assets/vendors/bootstrap/js/bootstrap.js"></script>
+    <script src="../assets/vendors/swipe/swipe.js"></script>
+    <script src="../assets/vendors/art-template/template-web.js"></script>
+    <script type="text/html" id="slideTpl">
+        {{each list}}
+        <tr>
+            <td class="text-center"><img class="slide" src="{{$value.image}}"></td>
+            <td>{{$value.title}}</td>
+            <td>{{$value.link}}</td>
+            <td class="text-center">
+                <a href="javascript:;" class="btn btn-danger btn-xs" data-id='{{$value._id}}' id='delete'>删除</a>
+            </td>
+        </tr>
+        {{/each}}
+    </script>
+    <script>
+        var sArr = [];
+        //轮播展示
+        $.ajax({
+            type: 'get',
+            url: '/slides',
+            success: function(res) {
+                sArr = res;
+                render(sArr);
+            }
+        });
+        //展示添加的图片
+        $('#image').on('change', function() {
+            var formData = new FormData();
+            formData.append('image', this.files[0])
+            $.ajax({
+                type: 'post',
+                url: '/upload',
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function(res) {
+                    $('#file').val(res[0].image)
+                    $('#prve').show().prop('src', res[0].image);
+                }
+            })
+
+        });
+
+        //添加轮播图
+        $('#btn').on('click', function() {
+                console.log($('form').serialize());
+
+                $.ajax({
+                    type: 'post',
+                    url: '/slides',
+                    data: $('form').serialize(),
+                    success: function(res) {
+                        sArr.push(res)
+                        render(sArr);
+                    }
+                })
+            })
+            //模板渲染
+        function render(arr) {
+            var html = template('slideTpl', {
+                list: arr
+            })
+            $('tbody').html(html)
+        }
+        //删除
+        $('tbody').on('click', '#delete', function() {
+            var id = $(this).attr('data-id');
+            $.ajax({
+                type: 'delete',
+                url: '/slides/' + id,
+                success: function(res) {
+                    var index = sArr.findIndex(item => item._id == res._id)
+                    sArr.splice(index, 1);
+                    render(sArr);
+                }
+            })
+        })
+    </script>
     <script src="../js/common.js"></script>
+
     <script>
         NProgress.done()
     </script>
