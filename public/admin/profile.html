@@ -116,7 +116,6 @@
             type: 'get',
             url: '/users/' + userId,
             success: function(res) {
-                console.log(res);
                 $('#img').prop('src', res.avatar)
                 $('#email').val(res.email)
                 $('#nickname').val(res.nickName)
