@@ -187,7 +187,6 @@
                     $('#content').val(res.content)
                     $('#prev').show().prop('src', res.thumbnail)
                     $('#category > option').each((index, item) => {
-                        console.log(item);
                         if ($(item).attr('value') == res.category) {
                             $(item).prop('selected', true)
                         }
