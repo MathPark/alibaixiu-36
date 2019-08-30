@@ -178,7 +178,6 @@
                 type: 'get',
                 url: '/posts/' + id,
                 success: function(res) {
-                    console.log(res);
                     $('#pAdd').hide()
                     $('#pEdit').show()
                     $('h1').text('编辑文章')
@@ -187,20 +186,21 @@
                     $('#content').val(res.content)
                     $('#prev').show().prop('src', res.thumbnail)
                     $('#category > option').each((index, item) => {
-                        if ($(item).attr('value') == res.category) {
+                        if ($(item).attr('value') == res.category._id) {
                             $(item).prop('selected', true)
                         }
                     })
                     $('#status > option').each((index, item) => {
+
                         if ($(item).attr('value') == res.state) {
                             $(item).prop('selected', true)
                         }
                     })
                     $('#created').val(res.createAt && res.createAt.substr(0, 16))
-
                 }
             })
         }
+        //编辑
         $('#pEdit').on('click', function() {
             $.ajax({
                 type: 'put',
@@ -221,10 +221,8 @@
                 if (tem[0] == name) {
                     return tem[1];
                 }
-
             }
             return -1;
-
         }
     </script>
     <script>
